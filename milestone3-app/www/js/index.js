@@ -36,8 +36,32 @@ var app = {
     // The scope of 'this' is the event. In order to call the 'receivedEvent'
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
+        app.loadTemplates();
         app.render('container');
-        $('#submit').on('click', app.addEntry);
+        app.registerCallbacks();
+    },
+
+    loadTemplates: function(){
+      var templateText = document.getElementById('entries');
+
+      app.entriesTemplate = new EJS({text: templateText});
+
+      var addEntryFormTemplateText = document.getElementById('addEntryForm');
+      app.addEntryFormTemplate = new EJS({text: addEntryFormTemplateText});
+    },
+
+    registerCallbacks: function(){
+      $('#entryForm').hide();
+      //$('#container').hide();
+      $('#addEntry').on('click', function(){
+        $('#entryForm').show();
+        //$('#container').hide();
+      });
+      $('#navEntries').on('click', function(){
+        //$('#container').show();
+        $('#entryForm').hide();
+      });
+      $('#submit').on('click', app.addEntry);
     },
 
     addEntry: function(evt){
@@ -49,22 +73,31 @@ var app = {
       var entry = {slug: slug, body: body};
 
       events.push(entry);
-      
+
+      $('#entryForm').hide();
+
       app.render("container");
     },
     // Update DOM on a Received Event
     render: function(id) {
       var containerElement = document.getElementById(id);
 
-      var html = '';
-
-      for(var i=0; i<events.length; i++)
-      {
-        html += '<h1>' + events[i].slug + '</h1>' +
-        '<p>' + events[i].body + '</p>';
-      }
+      var html = app.entriesTemplate.render({events: events});
 
       containerElement.innerHTML = html;
+
+      var form = app.addEntryFormTemplate.render();
+
+      $('#container').append(form);
+
+      $(".delete").on('click', function(evt){
+        console.log("Delete" + evt);
+        var entryID = $(this).data('id');//$(this).attr('data-id'); //data-foo is only used by jquery code. !!Must always be lowercase
+        console.log(entryID);
+        events.splice(entryID, 1);
+
+        app.render("container");
+      });
 
       //var parentElement = document.getElementById(id);
       //var listeningElement = parentElement.querySelector('.listening');
