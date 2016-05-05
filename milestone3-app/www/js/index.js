@@ -17,8 +17,26 @@
  * under the License.
  */
 
-var events = [{slug: "How to pass class",
-                body: "Come to class"}];
+ var util = {
+   store: function(namespace, data){
+     if( arguments.length > 1)
+     {
+       return localStorage.setItem(namespace, JSON.stringify(data));
+     } else {
+       var store = localStorage.getItem(namespace);
+       if(store)
+       {
+         return JSON.parse(store);
+       } else {
+         return [];
+       }
+     }
+   }
+ };
+
+//var posts = [{slug: "How to pass class",
+//                body: "Come to class"}];
+
 var app = {
     // Application Constructor
     initialize: function() {
@@ -36,32 +54,49 @@ var app = {
     // The scope of 'this' is the event. In order to call the 'receivedEvent'
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
+        app.posts = util.store('posts');
         app.loadTemplates();
-        app.render('container');
+        app.render('container', 'entries', {posts: app.posts});
         app.registerCallbacks();
     },
 
     loadTemplates: function(){
-      var templateText = document.getElementById('entries');
+      var templates = ['entries', 'addEntryForm', 'entry'];
 
-      app.entriesTemplate = new EJS({text: templateText});
+      var templateText ='';
 
-      var addEntryFormTemplateText = document.getElementById('addEntryForm');
-      app.addEntryFormTemplate = new EJS({text: addEntryFormTemplateText});
+      app.templates = {};
+
+      for(var i=0; i<templates.length; i++){
+        var templateText = document.getElementById(templates[i]).text;
+
+        app.templates[templates[i]] = new EJS({text: templateText});
+      }
     },
 
     registerCallbacks: function(){
-      $('#entryForm').hide();
-      //$('#container').hide();
-      $('#addEntry').on('click', function(){
-        $('#entryForm').show();
-        //$('#container').hide();
-      });
-      $('#navEntries').on('click', function(){
-        //$('#container').show();
-        $('#entryForm').hide();
-      });
-      $('#submit').on('click', app.addEntry);
+
+      $('body').on('click', 'a', function(evt){
+       evt.preventDefault();
+       history.pushState({}, '', $(this).attr('href'));
+       //render stuff
+       app.route(location.pathname);
+     })
+
+      $('#container').on('click','#submit',app.addEntry);
+      $('#container').on('click','.delete',app.deleteEntry);
+    },
+
+    route: function(path){
+      if(path === '/add'){
+        app.render('container', 'addEntryForm', {});
+        return;
+      }
+      if(/\/entries\/(\d*)/.test(path)){
+        var id = parseInt(path.match(/\/entries\/(\d*)/)[1]);
+        app.render('container', 'entry', {})
+      }
+      app.render('container','entries', {posts: app.posts});
     },
 
     addEntry: function(evt){
@@ -72,42 +107,45 @@ var app = {
 
       var entry = {slug: slug, body: body};
 
-      events.push(entry);
+      app.posts.push(entry);
+      util.store('posts', app.posts);
 
       $('#entryForm').hide();
 
-      app.render("container");
+      app.render("container", "entries", {posts: app.posts});
     },
+
+    deleteEntry:function(){
+      var entryID = $(this).attr('data-id');
+      app.posts.splice(entryID, 1);
+      util.store('posts', app.posts);
+
+      app.render("container", "entries", {posts: app.posts});
+    },
+
     // Update DOM on a Received Event
-    render: function(id) {
+    render: function(id, template, data) {
+      console.log("in the render");
       var containerElement = document.getElementById(id);
 
-      var html = app.entriesTemplate.render({events: events});
+      var html = app.templates[template].render(data);
 
       containerElement.innerHTML = html;
-
-      var form = app.addEntryFormTemplate.render();
-
-      $('#container').append(form);
-
-      $(".delete").on('click', function(evt){
-        console.log("Delete" + evt);
-        var entryID = $(this).data('id');//$(this).attr('data-id'); //data-foo is only used by jquery code. !!Must always be lowercase
-        console.log(entryID);
-        events.splice(entryID, 1);
-
-        app.render("container");
-      });
-
-      //var parentElement = document.getElementById(id);
-      //var listeningElement = parentElement.querySelector('.listening');
-      //var receivedElement = parentElement.querySelector('.received');
-      //
-      //listeningElement.setAttribute('style', 'display:none;');
-      //receivedElement.setAttribute('style', 'display:block;');
-      //
-      //console.log('Received Event: ' + id);
     }
 };
 
 app.initialize();
+//
+//var form = app.addEntryFormTemplate.render();
+//
+//$('#container').append(form);
+
+//$(".delete").on('click', function(evt){
+//  console.log("Delete" + evt);
+//  var entryID = $(this).data('id');//$(this).attr('data-id'); //data-foo is only used by jquery code. !!Must always be lowercase
+//  console.log(entryID);
+//  app.posts.splice(entryID, 1);
+
+//  util.store('posts', app.posts);
+
+//  app.render("container");
