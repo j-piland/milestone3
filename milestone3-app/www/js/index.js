@@ -37,6 +37,20 @@ var app = {
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
         app.render('container');
+        $('#submit').on('click', app.addEntry);
+    },
+
+    addEntry: function(evt){
+      evt.preventDefault();
+
+      var slug = $('#slug').val();
+      var body = $('#body').val();
+
+      var entry = {slug: slug, body: body};
+
+      events.push(entry);
+      
+      app.render("container");
     },
     // Update DOM on a Received Event
     render: function(id) {
@@ -51,6 +65,7 @@ var app = {
       }
 
       containerElement.innerHTML = html;
+
       //var parentElement = document.getElementById(id);
       //var listeningElement = parentElement.querySelector('.listening');
       //var receivedElement = parentElement.querySelector('.received');
