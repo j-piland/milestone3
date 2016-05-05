@@ -38,7 +38,7 @@
           <h1>Today I Learned</h1>
           <%for(var i=0; i<posts.length; i++) { %>
             <div>
-              <h1><a href='/entrie/<%= i %>'><%= posts[i].slug %><a></h1>
+              <h1><a href='/entries/<%= i %>'><%= posts[i].slug %><a></h1>
               <p><%= posts[i].body %></p>
               <button data-id="<%= i %>" class="delete" type="button">Delete</button>
             </div>

@@ -93,10 +93,12 @@ var app = {
         return;
       }
       if(/\/entries\/(\d*)/.test(path)){
-        var id = parseInt(path.match(/\/entries\/(\d*)/)[1]);
-        app.render('container', 'entry', {})
+        var id = parseInt(  path.match(/\/entries\/(\d*)/)[1]  );
+        app.render('container', 'entry', {post: app.posts[id]});
+        return
       }
-      app.render('container','entries', {posts: app.posts});
+        app.render('container', 'entries', {posts: app.posts});
+
     },
 
     addEntry: function(evt){
