@@ -16,6 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+var events = [{slug: "How to pass class",
+                body: "Come to class"}];
 var app = {
     // Application Constructor
     initialize: function() {
@@ -39,7 +42,15 @@ var app = {
     render: function(id) {
       var containerElement = document.getElementById(id);
 
-      containerElement.innerHTML = '<h1>HELLO WORLD</h1>';
+      var html = '';
+
+      for(var i=0; i<events.length; i++)
+      {
+        html += '<h1>' + events[i].slug + '</h1>' +
+        '<p>' + events[i].body + '</p>';
+      }
+
+      containerElement.innerHTML = html;
       //var parentElement = document.getElementById(id);
       //var listeningElement = parentElement.querySelector('.listening');
       //var receivedElement = parentElement.querySelector('.received');
